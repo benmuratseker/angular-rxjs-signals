@@ -1,25 +1,53 @@
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  inject,
+} from "@angular/core";
 
-import { NgIf, NgFor, CurrencyPipe } from '@angular/common';
-import { Product } from '../product';
+import { NgIf, NgFor, CurrencyPipe } from "@angular/common";
+import { Product } from "../product";
+import { Subscription, tap } from "rxjs";
+import { ProductService } from "../product.service";
 
 @Component({
-    selector: 'pm-product-detail',
-    templateUrl: './product-detail.component.html',
-    standalone: true,
-    imports: [NgIf, NgFor, CurrencyPipe]
+  selector: "pm-product-detail",
+  templateUrl: "./product-detail.component.html",
+  standalone: true,
+  imports: [NgIf, NgFor, CurrencyPipe],
 })
-export class ProductDetailComponent {
-  // Just enough here for the template to compile
-  @Input() productId: number = 0;
-  errorMessage = '';
+export class ProductDetailComponent implements OnChanges, OnDestroy {
+  private productService = inject(ProductService);
+  @Input() productId: number = 0; //gets data when we select a product from product-list component
+  errorMessage = "";
 
   // Product to display
   product: Product | null = null;
+  subProduct!: Subscription;
 
   // Set the page title
-  pageTitle = this.product ? `Product Detail for: ${this.product.productName}` : 'Product Detail';
+  pageTitle = this.product
+    ? `Product Detail for: ${this.product.productName}`
+    : "Product Detail";
 
-  addToCart(product: Product) {
+  ngOnChanges(changes: SimpleChanges): void {
+    const id = changes["productId"].currentValue; //from here -> <pm-product-detail [productId]="selectedProductId"/>
+
+    if (id) {
+      this.subProduct = this.productService
+        .getProduct(id)
+        .pipe(tap(() => console.log("In product detail component")))
+        .subscribe((product) => (this.product = product));
+    }
   }
+
+  ngOnDestroy(): void {
+    if (this.subProduct) {
+      this.subProduct.unsubscribe();
+    }
+  }
+
+  addToCart(product: Product) {}
 }

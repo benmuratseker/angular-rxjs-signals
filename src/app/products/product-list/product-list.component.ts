@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 
-import { NgIf, NgFor, NgClass } from "@angular/common";
+import { NgIf, NgFor, NgClass, AsyncPipe } from "@angular/common";
 import { Product } from "../product";
 import { ProductDetailComponent } from "../product-detail/product-detail.component";
 import { ProductService } from "../product.service";
@@ -10,9 +10,11 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
   selector: "pm-product-list",
   templateUrl: "./product-list.component.html",
   standalone: true,
-  imports: [NgIf, NgFor, NgClass, ProductDetailComponent],
+  imports: [NgIf, NgFor, NgClass, ProductDetailComponent, AsyncPipe],
 })
-export class ProductListComponent implements OnInit, OnDestroy {
+// export class ProductListComponent implements OnInit, OnDestroy {
+//we don't need implementations
+  export class ProductListComponent {
   pageTitle = "Products";
   errorMessage = "";
   sub!: Subscription;
@@ -20,37 +22,48 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   private productService = inject(ProductService);
   // Products
-  products: Product[] = [];
+  //products: Product[] = [];
+
+  readonly products$ = this.productService.products$
+  .pipe(
+    tap(() => console.log("In component pipeline")),
+    catchError(err => {
+    this.errorMessage = err;
+    return EMPTY
+    })
+  );
+  // ** because we don't use subscribe we don't need onInit and destroy
 
   // Selected product id to highlight the entry
   selectedProductId: number = 0;
 
-  ngOnInit(): void {
-    this.sub = this.productService
-      .getProducts()
-      .pipe(
-        tap(() => console.log("In component pipeline")),
-        catchError(err => {
-        this.errorMessage = err;
-        return EMPTY
-        })
-      //to send error message to errorMessage on html
-      // .subscribe({
-      //   next: products => {
-      //     this.products = products;
-      //     console.log(this.products);
-      //   },
-      //   error: err => this.errorMessage = err
-      // });
-      ).subscribe((products) => {
-        this.products = products;
-        console.log(this.products);
-      });
-  }
+  // ngOnInit(): void {
+  //   this.sub = this.productService
+  //     //.getProducts()//related to declarative update on product service
+  //     .products$
+  //     .pipe(
+  //       tap(() => console.log("In component pipeline")),
+  //       catchError(err => {
+  //       this.errorMessage = err;
+  //       return EMPTY
+  //       })
+  //     //to send error message to errorMessage on html
+  //     // .subscribe({
+  //     //   next: products => {
+  //     //     this.products = products;
+  //     //     console.log(this.products);
+  //     //   },
+  //     //   error: err => this.errorMessage = err
+  //     // });
+  //     ).subscribe((products) => {
+  //       this.products = products;
+  //       console.log(this.products);
+  //     });
+  // }
 
-  ngOnDestroy(): void {
-    this.sub.unsubscribe();
-  }
+  // ngOnDestroy(): void {
+  //   this.sub.unsubscribe();
+  // }
 
   onSelected(productId: number): void {
     this.selectedProductId = productId;

@@ -19,16 +19,23 @@ export class ProductService {
 
   private http = inject(HttpClient);
 
-  getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(this.productsUrl).pipe(
-      tap(() => console.log("Inc http.get pipeline")),
-      // catchError((err) => {
-      //   console.error(err);
-      //   return of(ProductData.products);
-      // })
-      catchError(err => this.handleError(err))
+  // getProducts(): Observable<Product[]> {
+  //   return this.http.get<Product[]>(this.productsUrl).pipe(
+  //     tap(() => console.log("Inc http.get pipeline")),
+  //     // catchError((err) => {
+  //     //   console.error(err);
+  //     //   return of(ProductData.products);
+  //     // })
+  //     catchError(err => this.handleError(err))
+  //   );
+  // }
+
+    //this part will do the same thing as declarative approach
+    readonly products$ = this.http.get<Product[]>(this.productsUrl)
+    .pipe(
+      tap(() => console.log('In http.get pipeline'),
+    catchError( e => this.handleError(e)))
     );
-  }
 
   getProduct(id: number): Observable<Product> {
     const productUrl = this.productsUrl + "/" + id;
@@ -41,6 +48,9 @@ export class ProductService {
         catchError(err => this.handleError(err))
       );
   }
+
+
+
 /*
 concatMap: waits for each inner observable to complete before processing the next one
 mergeMap: processes inner observables in parallel and merges the result

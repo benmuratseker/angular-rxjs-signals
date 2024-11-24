@@ -7,7 +7,7 @@ import {
   inject,
 } from "@angular/core";
 
-import { NgIf, NgFor, CurrencyPipe } from "@angular/common";
+import { NgIf, NgFor, CurrencyPipe, AsyncPipe } from "@angular/common";
 import { Product } from "../product";
 import { catchError, EMPTY, Subscription, tap } from "rxjs";
 import { ProductService } from "../product.service";
@@ -16,7 +16,7 @@ import { ProductService } from "../product.service";
   selector: "pm-product-detail",
   templateUrl: "./product-detail.component.html",
   standalone: true,
-  imports: [NgIf, NgFor, CurrencyPipe],
+  imports: [NgIf, NgFor, CurrencyPipe, AsyncPipe],
 })
 export class ProductDetailComponent implements OnChanges, OnDestroy {
   private productService = inject(ProductService);

@@ -1,9 +1,11 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { catchError, Observable, of, tap, throwError } from "rxjs";
+import { catchError, map, Observable, of, switchMap, tap, throwError } from "rxjs";
 import { Product } from "./product";
 import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
+import { ReviewService } from "../reviews/review.service";
+import { Review } from "../reviews/review";
 
 @Injectable({
   providedIn: "root",
@@ -11,6 +13,7 @@ import { HttpErrorService } from "../utilities/http-error.service";
 export class ProductService {
   private productsUrl = "api/products";
   private errorService = inject(HttpErrorService);
+  private reviewServie = inject(ReviewService);
 
   //constructor(private http: HttpClient) {}
 
@@ -34,8 +37,25 @@ export class ProductService {
       .get<Product>(productUrl)
       .pipe(
         tap(() => console.log("In http.get by id pipeline")),
+        switchMap(product => this.getProductWithReviews(product)),
         catchError(err => this.handleError(err))
       );
+  }
+/*
+concatMap: waits for each inner observable to complete before processing the next one
+mergeMap: processes inner observables in parallel and merges the result
+switchMap: unsubscribes from the prior inner observable and switches to the new one
+*/
+  private getProductWithReviews(product: Product) : Observable<Product> {
+    if(product.hasReviews) {
+      return this.http.get<Review[]>(this.reviewServie.getReviewUrl(product.id))
+        .pipe(
+          map(reviews => ({ ...product, reviews } as Product) )
+        )
+    }
+    else {
+      return of(product);//because only a product is not an observable
+    }
   }
 
   private handleError(err: HttpErrorResponse): Observable<never> { //Observable does not emit anything in here

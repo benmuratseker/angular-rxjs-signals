@@ -36,6 +36,10 @@ export class ProductService {
       // tap(() => console.log('In http.get pipeline'),
       tap(p => console.log(JSON.stringify(p))),//for caching mechanism
       shareReplay(1),//1 is buffer size we only need to emit once products cause it's not changing 
+      //we need to take care where we add a shareReplay in the pipeline
+      //Before: precossed before caching the data
+      //After: Re-executed for each subscription
+      //and we need to clear the cache at some point (fluidity of data, user's behavior, on a time interval, allow user to control when data is refreshed, getting fresh data on update operations)
       tap(() => console.log('After shareReplay')),
       catchError( e => this.handleError(e)));
 

@@ -26,7 +26,7 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
 
   readonly products$ = this.productService.products$
   .pipe(
-    tap(() => console.log("In component pipeline")),
+    // tap(() => console.log("In component pipeline")), // for cache mechanism
     catchError(err => {
     this.errorMessage = err;
     return EMPTY

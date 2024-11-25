@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { catchError, map, Observable, of, switchMap, tap, throwError } from "rxjs";
+import { catchError, map, Observable, of, shareReplay, switchMap, tap, throwError } from "rxjs";
 import { Product } from "./product";
 import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
@@ -33,9 +33,11 @@ export class ProductService {
     //this part will do the same thing as declarative approach
     readonly products$ = this.http.get<Product[]>(this.productsUrl)
     .pipe(
-      tap(() => console.log('In http.get pipeline'),
-    catchError( e => this.handleError(e)))
-    );
+      // tap(() => console.log('In http.get pipeline'),
+      tap(p => console.log(JSON.stringify(p))),//for caching mechanism
+      shareReplay(1),//1 is buffer size we only need to emit once products cause it's not changing 
+      tap(() => console.log('After shareReplay')),
+      catchError( e => this.handleError(e)));
 
   getProduct(id: number): Observable<Product> {
     const productUrl = this.productsUrl + "/" + id;

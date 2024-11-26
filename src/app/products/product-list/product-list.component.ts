@@ -66,6 +66,7 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
   // }
 
   onSelected(productId: number): void {
-    this.selectedProductId = productId;
+    //this.selectedProductId = productId;
+    this.productService.productSelected(productId);
   }
 }

@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { catchError, map, Observable, of, shareReplay, switchMap, tap, throwError } from "rxjs";
+import { BehaviorSubject, catchError, map, Observable, of, shareReplay, switchMap, tap, throwError } from "rxjs";
 import { Product } from "./product";
 import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
@@ -14,6 +14,9 @@ export class ProductService {
   private productsUrl = "api/products";
   private errorService = inject(HttpErrorService);
   private reviewServie = inject(ReviewService);
+
+  private productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
+  readonly productSelected$ = this.productSelectedSubject.asObservable();
 
   //constructor(private http: HttpClient) {}
 
@@ -55,6 +58,12 @@ export class ProductService {
       );
   }
 
+
+
+productSelected(selectedProductId: number) : void {
+  this.productSelectedSubject.next(selectedProductId);
+  //when user selects any product we emit a next notification from that subject to any subscribers.
+}
 
 
 /*

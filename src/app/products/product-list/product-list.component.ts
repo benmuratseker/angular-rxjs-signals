@@ -35,7 +35,8 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
   // ** because we don't use subscribe we don't need onInit and destroy
 
   // Selected product id to highlight the entry
-  selectedProductId: number = 0;
+  //selectedProductId: number = 0;
+  readonly selectedProductId$ = this.productService.productSelected$;//bind from template to a component
 
   // ngOnInit(): void {
   //   this.sub = this.productService

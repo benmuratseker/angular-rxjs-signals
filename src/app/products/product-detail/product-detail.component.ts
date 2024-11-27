@@ -18,43 +18,54 @@ import { ProductService } from "../product.service";
   standalone: true,
   imports: [NgIf, NgFor, CurrencyPipe, AsyncPipe],
 })
-export class ProductDetailComponent implements OnChanges, OnDestroy {
+// export class ProductDetailComponent implements OnChanges, OnDestroy {
+  export class ProductDetailComponent {
   private productService = inject(ProductService);
   @Input() productId: number = 0; //gets data when we select a product from product-list component
   errorMessage = "";
 
   // Product to display
-  product: Product | null = null;
-  subProduct!: Subscription;
+  //product: Product | null = null;
+  product$ = this.productService.product$
+  .pipe(
+    catchError(err => {
+      this.errorMessage = err;
+    return EMPTY;
+    })
+  );
+  
+
+  //subProduct!: Subscription;
 
   // Set the page title
-  pageTitle = this.product
-    ? `Product Detail for: ${this.product.productName}`
-    : "Product Detail";
+  // pageTitle = this.product
+  //   ? `Product Detail for: ${this.product.productName}`
+  //   : "Product Detail";
+  pageTitle = "Product Detail";
 
-  ngOnChanges(changes: SimpleChanges): void {
-    const id = changes["productId"].currentValue; //from here -> <pm-product-detail [productId]="selectedProductId"/>
+  // ngOnChanges(changes: SimpleChanges): void {
+  //   const id = changes["productId"].currentValue; //from here -> <pm-product-detail [productId]="selectedProductId"/>
 
-    if (id) {
-      this.subProduct = this.productService
-        .getProduct(id)
-        .pipe(
-          tap(() => console.log("In product detail component")),
-          catchError(err => {
-            this.errorMessage = err;
-          return EMPTY;
-          })
-        ).subscribe(
-          product => this.product = product
-        );
-    }
-  }
+  //   if (id) {
+  //     this.subProduct = this.productService
+  //       .getProduct(id)
+  //       .pipe(
+  //         tap(() => console.log("In product detail component")),
+  //         catchError(err => {
+  //           this.errorMessage = err;
+  //         return EMPTY;
+  //         })
+  //       ).subscribe(
+  //         product => this.product = product
+  //       );
+  //   }
+  // }
 
-  ngOnDestroy(): void {
-    if (this.subProduct) {
-      this.subProduct.unsubscribe();
-    }
-  }
+  // ngOnDestroy(): void {
+  //   if (this.subProduct) {
+  //     this.subProduct.unsubscribe();
+  //   }
+  // }
 
   addToCart(product: Product) {}
 }

@@ -11,6 +11,7 @@ import { NgIf, NgFor, CurrencyPipe, AsyncPipe } from "@angular/common";
 import { Product } from "../product";
 import { catchError, EMPTY, Subscription, tap } from "rxjs";
 import { ProductService } from "../product.service";
+import { CartService } from "src/app/cart/cart.service";
 
 @Component({
   selector: "pm-product-detail",
@@ -21,7 +22,8 @@ import { ProductService } from "../product.service";
 // export class ProductDetailComponent implements OnChanges, OnDestroy {
   export class ProductDetailComponent {
   private productService = inject(ProductService);
-  @Input() productId: number = 0; //gets data when we select a product from product-list component
+  private cartService = inject(CartService);
+  //@Input() productId: number = 0; //gets data when we select a product from product-list component
   errorMessage = "";
 
   // Product to display
@@ -67,5 +69,7 @@ import { ProductService } from "../product.service";
   //   }
   // }
 
-  addToCart(product: Product) {}
+  addToCart(product: Product) {
+    this.cartService.addToCart(product);
+  }
 }

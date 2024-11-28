@@ -12,6 +12,15 @@ export class CartService {
     .reduce((accQty, item) => accQty + item.quantity, 0)//0 is initial value for accumulation
   );
 
+  subTotal = computed(() => this.cartItems().reduce((accTotal, item) => 
+            accTotal + (item.quantity * item.product.price), 0));
+
+  deliveryFee = computed<number>(() => this.subTotal() < 50 ? 5.99 : 0);
+
+  tax = computed(() => Math.round(this.subTotal() * 10.75) / 100);
+
+  totalPrice = computed(() => this.subTotal() + this.deliveryFee() + this.tax());
+
   eLength = effect(() => console.log('Cart array length:', this.cartItems().length))
   
   addToCart(product: Product):void {

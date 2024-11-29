@@ -28,4 +28,11 @@ export class CartService {
     //we added to cart item list but we need to notify wit set or update methods
     this.cartItems.update(items => [...items, {product, quantity:1}]);
   }
+
+  updateQuantity(cartItem: CartItem, quantity: number): void {
+    this.cartItems.update(items => 
+        items.map(item => item.product.id === cartItem.product.id ? 
+            { ...item, quantity } : item
+        ));
+  }
 }

@@ -18,6 +18,7 @@ import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
 import { ReviewService } from "../reviews/review.service";
 import { Review } from "../reviews/review";
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: "root",
@@ -48,7 +49,7 @@ export class ProductService {
   // }
 
   //this part will do the same thing as declarative approach
-  readonly products$ = this.http.get<Product[]>(this.productsUrl).pipe(
+  private products$ = this.http.get<Product[]>(this.productsUrl).pipe(
     // tap(() => console.log('In http.get pipeline'),
     tap((p) => console.log(JSON.stringify(p))), //for caching mechanism
     shareReplay(1), //1 is buffer size we only need to emit once products cause it's not changing
@@ -59,6 +60,9 @@ export class ProductService {
     tap(() => console.log("After shareReplay")),
     catchError((e) => this.handleError(e))
   );
+// we converted observable (products$) to signal and changed it as private
+  products = toSignal(this.products$, { initialValue: [] as Product[] });
+
 
   readonly product1$ = this.productSelected$.pipe(
     filter(Boolean),

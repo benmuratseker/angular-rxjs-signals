@@ -24,15 +24,19 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
   // Products
   //products: Product[] = [];
 
-  readonly products$ = this.productService.products$
-  .pipe(
-    // tap(() => console.log("In component pipeline")), // for cache mechanism
-    catchError(err => {
-    this.errorMessage = err;
-    return EMPTY
-    })
-  );
+  // readonly products$ = this.productService.products$
+  // .pipe(
+  //   // tap(() => console.log("In component pipeline")), // for cache mechanism
+  //   catchError(err => {
+  //   this.errorMessage = err;
+  //   return EMPTY
+  //   })
+  // );//because of products$ converted to signal
   // ** because we don't use subscribe we don't need onInit and destroy
+    
+  products = this.productService.products;
+
+
 
   // Selected product id to highlight the entry
   //selectedProductId: number = 0;

@@ -16,7 +16,7 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
 //we don't need implementations
   export class ProductListComponent {
   pageTitle = "Products";
-  errorMessage = "";
+  //errorMessage = "";
   sub!: Subscription;
   subProduct!: Subscription;
 
@@ -35,6 +35,7 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
   // ** because we don't use subscribe we don't need onInit and destroy
     
   products = this.productService.products;
+  errorMessage = this.productService.productsError;
 
 
 

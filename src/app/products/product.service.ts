@@ -13,7 +13,7 @@ import {
   tap,
   throwError,
 } from "rxjs";
-import { Product } from "./product";
+import { Product, Result } from "./product";
 import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
 import { ReviewService } from "../reviews/review.service";
@@ -24,7 +24,7 @@ import { toSignal } from "@angular/core/rxjs-interop";
   providedIn: "root",
 })
 export class ProductService {
-  private productsUrl = "api/productss";
+  private productsUrl = "api/products";
   private errorService = inject(HttpErrorService);
   private reviewServie = inject(ReviewService);
 
@@ -51,27 +51,43 @@ export class ProductService {
   //#region Get Products with combineLatest and htp get
   //this part will do the same thing as declarative approach
 
-  private products$ = this.http.get<Product[]>(this.productsUrl).pipe(
-    // tap(() => console.log('In http.get pipeline'),
-    tap((p) => console.log(JSON.stringify(p))), //for caching mechanism
-    shareReplay(1), //1 is buffer size we only need to emit once products cause it's not changing
-    //we need to take care where we add a shareReplay in the pipeline
-    //Before: precossed before caching the data
-    //After: Re-executed for each subscription
-    //and we need to clear the cache at some point (fluidity of data, user's behavior, on a time interval, allow user to control when data is refreshed, getting fresh data on update operations)
-    tap(() => console.log("After shareReplay")),
-    catchError((e) => this.handleError(e))
+  //general approach
+  //commented out for error handling sample
+  // private products$ = this.http.get<Product[]>(this.productsUrl).pipe(
+  //   // tap(() => console.log('In http.get pipeline'),
+  //   tap((p) => console.log(JSON.stringify(p))), //for caching mechanism
+  //   shareReplay(1), //1 is buffer size we only need to emit once products cause it's not changing
+  //   //we need to take care where we add a shareReplay in the pipeline
+  //   //Before: precossed before caching the data
+  //   //After: Re-executed for each subscription
+  //   //and we need to clear the cache at some point (fluidity of data, user's behavior, on a time interval, allow user to control when data is refreshed, getting fresh data on update operations)
+  //   tap(() => console.log("After shareReplay")),
+  //   catchError((e) => this.handleError(e))
+  // );
+
+  private productsResult$ = this.http.get<Product[]>(this.productsUrl)
+    .pipe(
+      map(p => ({ data: p } as Result<Product[]>)),
+      tap(p => console.log(JSON.stringify(p))),
+      shareReplay(1),
+      catchError(err => of({ data: [], error: this.errorService.formatError(err)} as Result<Product[]>))
   );
+    
 
   // we converted observable (products$) to signal and changed it as private
   //products = toSignal(this.products$, { initialValue: [] as Product[] });
-  products = computed(() => {
-    try {
-      return toSignal(this.products$, { initialValue: [] as Product [] })();
-    } catch (error) {
-      return [] as Product[];
-    }
-  })
+  private productsResult = toSignal(this.productsResult$,{ initialValue:  ({ data: [] } as Result<Product[]>) });
+  products = computed(() => this.productsResult().data);
+  productsError = computed(() => this.productsResult().error);
+  
+  //to get api error
+  // products = computed(() => {
+  //   try {
+  //     return toSignal(this.products$, { initialValue: [] as Product [] })();
+  //   } catch (error) {
+  //     return [] as Product[];
+  //   }
+  // });
 
   //http get -> slower than combineLatests
   readonly product$ = this.productSelected$.pipe(
@@ -88,14 +104,14 @@ export class ProductService {
   ); //declarative getProduct
 
   //to use this part change nme to products$ instead of product1$
-  product$1 = combineLatest([this.productSelected$, this.products$]).pipe(
-    map(([selectedProductId, products]) =>
-      products.find((product) => product.id === selectedProductId)
-    ),
-    filter(Boolean),
-    switchMap((product) => this.getProductWithReviews(product)),
-    catchError((err) => this.handleError(err))
-  );
+  // product$1 = combineLatest([this.productSelected$, this.products$]).pipe(
+  //   map(([selectedProductId, products]) =>
+  //     products.find((product) => product.id === selectedProductId)
+  //   ),
+  //   filter(Boolean),
+  //   switchMap((product) => this.getProductWithReviews(product)),
+  //   catchError((err) => this.handleError(err))
+  // );
   //#endregion
 
   // getProduct(id: number): Observable<Product> {

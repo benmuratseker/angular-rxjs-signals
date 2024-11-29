@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { inject, Injectable } from "@angular/core";
+import { computed, inject, Injectable } from "@angular/core";
 import {
   BehaviorSubject,
   catchError,
@@ -18,13 +18,13 @@ import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
 import { ReviewService } from "../reviews/review.service";
 import { Review } from "../reviews/review";
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from "@angular/core/rxjs-interop";
 
 @Injectable({
   providedIn: "root",
 })
 export class ProductService {
-  private productsUrl = "api/products";
+  private productsUrl = "api/productss";
   private errorService = inject(HttpErrorService);
   private reviewServie = inject(ReviewService);
 
@@ -48,7 +48,9 @@ export class ProductService {
   //   );
   // }
 
+  //#region Get Products with combineLatest and htp get
   //this part will do the same thing as declarative approach
+
   private products$ = this.http.get<Product[]>(this.productsUrl).pipe(
     // tap(() => console.log('In http.get pipeline'),
     tap((p) => console.log(JSON.stringify(p))), //for caching mechanism
@@ -60,11 +62,19 @@ export class ProductService {
     tap(() => console.log("After shareReplay")),
     catchError((e) => this.handleError(e))
   );
-// we converted observable (products$) to signal and changed it as private
-  products = toSignal(this.products$, { initialValue: [] as Product[] });
 
+  // we converted observable (products$) to signal and changed it as private
+  //products = toSignal(this.products$, { initialValue: [] as Product[] });
+  products = computed(() => {
+    try {
+      return toSignal(this.products$, { initialValue: [] as Product [] })();
+    } catch (error) {
+      return [] as Product[];
+    }
+  })
 
-  readonly product1$ = this.productSelected$.pipe(
+  //http get -> slower than combineLatests
+  readonly product$ = this.productSelected$.pipe(
     filter(Boolean),
     switchMap((id) => {
       const productUrl = this.productsUrl + "/" + id;
@@ -75,18 +85,18 @@ export class ProductService {
         catchError((err) => this.handleError(err))
       );
     })
-  );//declarative getProduct
+  ); //declarative getProduct
 
-  product$ = combineLatest([
-    this.productSelected$,
-    this.products$
-  ]).pipe(
+  //to use this part change nme to products$ instead of product1$
+  product$1 = combineLatest([this.productSelected$, this.products$]).pipe(
     map(([selectedProductId, products]) =>
-      products.find(product => product.id === selectedProductId)),
+      products.find((product) => product.id === selectedProductId)
+    ),
     filter(Boolean),
-    switchMap(product => this.getProductWithReviews(product)),
-    catchError( err => this.handleError(err))
+    switchMap((product) => this.getProductWithReviews(product)),
+    catchError((err) => this.handleError(err))
   );
+  //#endregion
 
   // getProduct(id: number): Observable<Product> {
   //   const productUrl = this.productsUrl + "/" + id;

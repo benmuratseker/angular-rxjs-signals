@@ -1,4 +1,5 @@
-<div *ngIf='cartItem'>
+<!-- <div *ngIf='cartItem'> -->
+<div *ngIf='item() as cartItem'>
 
   <div class="row mb-2">
     <div class="col-md-4">
@@ -19,7 +20,8 @@
       </select>
     </div>
     <div class="col-md-2 text-center">
-      {{ exPrice | currency }}
+      <!-- {{ exPrice | currency }} -->
+      {{ exPrice() | currency }}
     </div>
     <div class="col-md-2">
       <button class="btn btn-warning"

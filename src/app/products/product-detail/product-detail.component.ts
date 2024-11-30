@@ -4,6 +4,7 @@ import {
   OnChanges,
   OnDestroy,
   SimpleChanges,
+  computed,
   inject,
 } from "@angular/core";
 
@@ -24,17 +25,19 @@ import { CartService } from "src/app/cart/cart.service";
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   //@Input() productId: number = 0; //gets data when we select a product from product-list component
-  errorMessage = "";
+  //errorMessage = "";
 
   // Product to display
+    product = this.productService.product;
+    errorMessage = this.productService.productError;
   //product: Product | null = null;
-  product$ = this.productService.product$
-  .pipe(
-    catchError(err => {
-      this.errorMessage = err;
-    return EMPTY;
-    })
-  );
+  // product$ = this.productService.product$
+  // .pipe(
+  //   catchError(err => {
+  //     this.errorMessage = err;
+  //   return EMPTY;
+  //   })
+  // );
   
 
   //subProduct!: Subscription;
@@ -43,7 +46,11 @@ import { CartService } from "src/app/cart/cart.service";
   // pageTitle = this.product
   //   ? `Product Detail for: ${this.product.productName}`
   //   : "Product Detail";
-  pageTitle = "Product Detail";
+  //pageTitle = "Product Detail";
+  pageTitle = computed(() =>
+      this.product()
+      ? `Product Detail fo: ${this.product()?.productName}`
+      : 'Product Detail');
 
   // ngOnChanges(changes: SimpleChanges): void {
   //   const id = changes["productId"].currentValue; //from here -> <pm-product-detail [productId]="selectedProductId"/>

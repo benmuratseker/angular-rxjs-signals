@@ -18,7 +18,7 @@ import { ProductData } from "./product-data";
 import { HttpErrorService } from "../utilities/http-error.service";
 import { ReviewService } from "../reviews/review.service";
 import { Review } from "../reviews/review";
-import { toSignal } from "@angular/core/rxjs-interop";
+import { toObservable, toSignal } from "@angular/core/rxjs-interop";
 
 @Injectable({
   providedIn: "root",
@@ -28,8 +28,8 @@ export class ProductService {
   private errorService = inject(HttpErrorService);
   private reviewServie = inject(ReviewService);
 
-  private productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
-  readonly productSelected$ = this.productSelectedSubject.asObservable();
+  // private productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
+  // readonly productSelected$ = this.productSelectedSubject.asObservable();
   selectedProductId = signal<number | undefined>(undefined);//converting BehaviorSubject to signal
 
   //constructor(private http: HttpClient) {}
@@ -89,7 +89,9 @@ export class ProductService {
   // });
 
   //http get -> slower than combineLatests
-  readonly product$ = this.productSelected$.pipe(
+  // readonly product$ = this.productSelected$
+  private productResult$ = toObservable(this.selectedProductId)
+    .pipe(
     filter(Boolean),
     switchMap((id) => {
       const productUrl = this.productsUrl + "/" + id;
@@ -97,10 +99,18 @@ export class ProductService {
       return this.http.get<Product>(productUrl).pipe(
         tap(() => console.log("In http.get by id pipeline")),
         switchMap((product) => this.getProductWithReviews(product)),
-        catchError((err) => this.handleError(err))
+        catchError((err) => of({
+          data: undefined,
+          error: this.errorService.formatError(err)
+        } as Result<Product>))
       );
-    })
+    }),
+    map(p => ({ data: p } as Result<Product>))
   ); //declarative getProduct
+
+  private productResult = toSignal(this.productResult$);
+  product = computed(() => this.productResult()?.data);
+  productError = computed(() => this.productResult()?.error);
 
   //to use this part change name to products$ instead of product1$
   // product$1 = combineLatest([this.productSelected$, this.products$]).pipe(
@@ -124,7 +134,7 @@ export class ProductService {
   // }
 
   productSelected(selectedProductId: number): void {
-    this.productSelectedSubject.next(selectedProductId);
+    //this.productSelectedSubject.next(selectedProductId);
     //when user selects any product we emit a next notification from that subject to any subscribers.
     this.selectedProductId.set(selectedProductId);//set signal
   }

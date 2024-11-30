@@ -41,7 +41,8 @@ import { catchError, EMPTY, Subscription, tap } from "rxjs";
 
   // Selected product id to highlight the entry
   //selectedProductId: number = 0;
-  readonly selectedProductId$ = this.productService.productSelected$;//bind from template to a component
+  // readonly selectedProductId$ = this.productService.productSelected$;//bind from template to a component - chsen for signal lately
+ selectedProductId = this.productService.selectedProductId;
 
   // ngOnInit(): void {
   //   this.sub = this.productService

@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { computed, inject, Injectable } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import {
   BehaviorSubject,
   catchError,
@@ -28,10 +28,9 @@ export class ProductService {
   private errorService = inject(HttpErrorService);
   private reviewServie = inject(ReviewService);
 
-  private productSelectedSubject = new BehaviorSubject<number | undefined>(
-    undefined
-  );
+  private productSelectedSubject = new BehaviorSubject<number | undefined>(undefined);
   readonly productSelected$ = this.productSelectedSubject.asObservable();
+  selectedProductId = signal<number | undefined>(undefined);//converting BehaviorSubject to signal
 
   //constructor(private http: HttpClient) {}
 
@@ -103,7 +102,7 @@ export class ProductService {
     })
   ); //declarative getProduct
 
-  //to use this part change nme to products$ instead of product1$
+  //to use this part change name to products$ instead of product1$
   // product$1 = combineLatest([this.productSelected$, this.products$]).pipe(
   //   map(([selectedProductId, products]) =>
   //     products.find((product) => product.id === selectedProductId)
@@ -127,6 +126,7 @@ export class ProductService {
   productSelected(selectedProductId: number): void {
     this.productSelectedSubject.next(selectedProductId);
     //when user selects any product we emit a next notification from that subject to any subscribers.
+    this.selectedProductId.set(selectedProductId);//set signal
   }
 
   /*

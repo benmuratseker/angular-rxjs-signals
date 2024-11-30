@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
-import { CartItem } from '../cart';
 import { CartItemComponent } from '../cart-item/cart-item.component';
 import { CartService } from '../cart.service';
 
@@ -16,6 +15,5 @@ export class CartListComponent {
 
   private cartService = inject(CartService);
 
-  //cartItems: CartItem[] = [];
   cartItems = this.cartService.cartItems;
 }
